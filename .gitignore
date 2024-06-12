@@ -1,0 +1,149 @@
+# 忽略所有的构建文件
+build/
+*.o
+*.elf
+*.bin
+*.pdb
+
+# 忽略所有的日志文件
+*.log
+
+# 忽略所有的配置文件
+*.yaml
+*.cfg
+
+# 忽略所有的锁文件
+*.lock
+
+# 忽略所有的编译器生成的文件
+*.bak
+*.swp
+
+# 忽略所有的依赖目录
+deps/
+vendor/
+
+# 忽略所有的节点日志和参数文件
+*_node.log
+*_node.param.yaml
+
+# 忽略所有的 ROS2 相关的缓存和构建文件
+*.ament_*
+
+# 忽略所有的 ROS2 相关的包文件
+*.packages
+
+# 忽略所有的 ROS2 相关的环境文件
+*.rosinstall
+
+# 忽略所有的 ROS2 相关的设置文件
+*.ros2_*
+
+# 忽略所有的 ROS2 相关的工作空间文件
+*.rosinstall
+
+# 忽略所有的 ROS2 相关的构建配置文件
+*.cmake
+
+# 忽略所有的 ROS2 相关的测试结果文件
+*.test
+
+# 忽略所有的 ROS2 相关的包列表文件
+*.ros2pkg
+
+# 忽略所有的 ROS2 相关的 ROS 包文件
+*.ros
+
+# 忽略所有的 ROS2 相关的 ROS 包列表文件
+*.rospack
+
+# 忽略所有的 ROS2 相关的 ROS 包配置文件
+*.rosconfig
+
+# 忽略所有的 ROS2 相关的 ROS 包环境文件
+*.rosenv
+
+# 忽略所有的 ROS2 相关的 ROS 包设置文件
+*.rossetup
+
+# 忽略所有的 ROS2 相关的 ROS 包缓存文件
+*.roscache
+
+# 忽略所有的 ROS2 相关的 ROS 包日志文件
+*.roslog
+
+# 忽略所有的 ROS2 相关的 ROS 包参数文件
+*.rosparam
+
+# 忽略所有的 ROS2 相关的 ROS 包配置文件
+*.rosconfig
+
+# 忽略所有的 ROS2 相关的 ROS 包环境文件
+*.rosenv
+
+# 忽略所有的 ROS2 相关的 ROS 包设置文件
+*.rossetup
+
+# 忽略所有的 ROS2 相关的 ROS 包缓存文件
+*.roscache
+
+# 忽略所有的 ROS2 相关的 ROS 包日志文件
+*.roslog
+
+# 忽略所有的 ROS2 相关的 ROS 包参数文件
+*.rosparam
+
+# 忽略所有的 ROS2 相关的 ROS 包配置文件
+*.rosconfig
+
+# 忽略所有的 ROS2 相关的 ROS 包环境文件
+*.rosenv
+
+# 忽略所有的 ROS2 相关的 ROS 包设置文件
+*.rossetup
+
+# 忽略所有的 ROS2 相关的 ROS 包缓存文件
+*.roscache
+
+# 忽略所有的 ROS2 相关的 ROS 包日志文件
+*.roslog
+
+# 忽略所有的 ROS2 相关的 ROS 包参数文件
+*.rosparam
+
+# 忽略所有的 ROS2 相关的 ROS 包配置文件
+*.rosconfig
+
+# 忽略所有的 ROS2 相关的 ROS 包环境文件
+*.rosenv
+
+# 忽略所有的 ROS2 相关的 ROS 包设置文件
+*.rossetup
+
+# 忽略所有的 ROS2 相关的 ROS 包缓存文件
+*.roscache
+
+# 忽略所有的 ROS2 相关的 ROS 包日志文件
+*.roslog
+
+# 忽略所有的 ROS2 相关的 ROS 包参数文件
+*.rosparam
+
+# 忽略所有的 ROS2 相关的 ROS 包配置文件
+*.rosconfig
+
+# 忽略所有的 ROS2 相关的 ROS 包环境文件
+*.rosenv
+
+# 忽略所有的 ROS2 相关的 ROS 包设置文件
+*.rossetup
+
+# 忽略所有的 ROS2 相关的 ROS 包缓存文件
+*.roscache
+
+# 有些 IDE 或编辑器生成的文件
+.idea/
+.vscode/
+
+# clion 配置文件
+cmake-build-debug/
