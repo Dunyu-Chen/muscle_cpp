@@ -40,5 +40,22 @@ install(
 )
 ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
 
+# create target
+
+add_executable(test_lib_signal
+  src/test_lib_signal.cpp
+)
+
+# add dependencies inside package
+target_include_directories(test_lib_signal
+        PUBLIC
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+        "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>"
+)
+target_link_libraries(test_lib_signal lib_signal)
+
+# install exetable
+install(TARGETS test_lib_signal
+    DESTINATION lib/${PROJECT_NAME})
 
 ament_package()
