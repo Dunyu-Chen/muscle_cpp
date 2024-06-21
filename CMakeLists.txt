@@ -9,7 +9,6 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(Eigen3 REQUIRED)
-
 # library target: matplotlib
 # plot library using matplotlib from python
 add_library(matplotlib_cpp INTERFACE)
@@ -52,7 +51,7 @@ target_include_directories( lib_signal
         "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>"
 )
 # 3. add dependencies of the target
-target_link_libraries(lib_signal PUBLIC Eigen3::Eigen)
+# target_link_libraries(lib_signal PUBLIC Eigen3::Eigen)
 # 4. export the header of the library
 install(
         DIRECTORY include/
@@ -87,5 +86,29 @@ target_link_libraries(test_lib_signal matplotlib_cpp)
 # 4. install exetable
 install(TARGETS test_lib_signal
     DESTINATION lib/${PROJECT_NAME})
+
+# executable target: signal_generator
+# generate signal to ros2 topic
+
+# 1. create target
+add_executable(signal_generator
+        src/signal_generator.cpp
+)
+# 2. add dependencies inside package by header
+target_include_directories(signal_generator
+        PUBLIC
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+        "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>"
+)
+# 3. add dependencies
+target_link_libraries(signal_generator PUBLIC Eigen3::Eigen)
+target_link_libraries(signal_generator PUBLIC lib_signal)
+find_package(std_msgs REQUIRED)
+find_package(muscle_interfaces REQUIRED)
+ament_target_dependencies(signal_generator PUBLIC std_msgs rclcpp muscle_interfaces)
+
+# 4. install exetable
+install(TARGETS test_lib_signal
+        DESTINATION lib/${PROJECT_NAME})
 
 ament_package()
