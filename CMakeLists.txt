@@ -87,6 +87,36 @@ target_link_libraries(test_lib_signal matplotlib_cpp)
 install(TARGETS test_lib_signal
     DESTINATION lib/${PROJECT_NAME})
 
+# lib_controller
+
+# 1. create target
+add_library(lib_controller SHARED
+        src/lib_controller.cpp
+)
+# 2. add header directories of target
+target_include_directories( lib_controller
+        PUBLIC
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+        "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>"
+)
+# 3. add dependencies of the target
+target_link_libraries(lib_controller PUBLIC Eigen3::Eigen)
+# 4. export the header of the library
+install(
+        DIRECTORY include/
+        DESTINATION include/${PROJECT_NAME}
+)
+# 5. compile the library
+install(
+        TARGETS lib_controller
+        EXPORT export_${PROJECT_NAME}
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+        RUNTIME DESTINATION bin
+)
+# 6. export the library
+ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
+
 # executable target: signal_generator
 # generate signal to ros2 topic
 
