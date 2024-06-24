@@ -6,6 +6,7 @@
 #define MUSCLE_CPP_LIB_SIGNAL_H
 #include <vector>
 #include <chrono>
+#include "muscle_cpp/lib_signal.h"
 
 struct Node_Sample_Time{
     double period; // in s

@@ -36,10 +36,12 @@ class Linear_System {
 public:
     Eigen::Vector<double,Eigen::Dynamic> state_vector;
     Eigen::Vector<double,Eigen::Dynamic> input_vector;
-    Linear_System(int State_dim, int Input_dim);
+    Linear_System(int State_dim, int Input_dim, double Sample_time);
     void set_A_matrix_from_list(double* Element_list);
     void set_B_matrix_from_list(double* Element_list);
+    Eigen::Vector<double,Eigen::Dynamic> explicit_step(Eigen::Vector<double,Eigen::Dynamic> Input_vector);
 private:
+    double sample_time;
     int state_dim;
     int input_dim;
     Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic> A_matrix;
@@ -52,5 +54,12 @@ struct MSD_Params{
     double D;
 };
 
+class MSD_Simulator {
+public:
+    MSD_Params params;
+    Linear_System state_space_model;
+    Node_Sample_Time sample_time;
+    MSD_Simulator(double Sample_time, MSD_Params Params);
+};
 
 #endif //MUSCLE_CPP_LIB_CONTROLLER_H

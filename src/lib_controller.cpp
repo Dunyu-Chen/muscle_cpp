@@ -3,6 +3,7 @@
 //
 
 #include "muscle_cpp/lib_controller.h"
+#include "muscle_cpp/lib_signal.h"
 
 Discrete_Controller::Discrete_Controller() {
 }
@@ -40,8 +41,10 @@ std::vector<double> PID_incremental::step() {
     return output_vector;
 }
 
-Linear_System::Linear_System(int State_dim, int Input_dim){
+Linear_System::Linear_System(int State_dim, int Input_dim, double Sample_time){
     input_dim = Input_dim;
+    state_dim = State_dim;
+    sample_time = Sample_time;
     state_vector.resize(State_dim);
     input_vector.resize(Input_dim);
     A_matrix.resize(State_dim,State_dim);
@@ -56,4 +59,21 @@ void Linear_System::set_A_matrix_from_list(double *Element_list) {
 void Linear_System::set_B_matrix_from_list(double *Element_list) {
     Eigen::Map<Eigen::MatrixXd> matrix (Element_list,state_dim,input_dim);
     B_matrix = matrix.matrix();
+}
+
+Eigen::Vector<double, Eigen::Dynamic> Linear_System::explicit_step(Eigen::Vector<double, Eigen::Dynamic> Input_vector) {
+    input_vector = std::move(Input_vector);
+    state_vector = state_vector + (A_matrix * state_vector + B_matrix * input_vector) * sample_time;
+    return state_vector;
+}
+
+MSD_Simulator::MSD_Simulator(double Sample_time, MSD_Params Params) : state_space_model(2,1,Sample_time) {
+    params = Params;
+    sample_time = init_node_sample_time(Sample_time);
+    state_space_model.set_A_matrix_from_list({});
+    double A_list[4] = {0,1,-params.S/params.M,-params.D/params.M};
+    state_space_model.set_A_matrix_from_list(A_list);
+    double B_list[2] = {0.0,1/params.M};
+    state_space_model.set_B_matrix_from_list(B_list);
+
 }

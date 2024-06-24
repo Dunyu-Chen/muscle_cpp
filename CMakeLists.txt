@@ -141,4 +141,19 @@ ament_target_dependencies(signal_generator PUBLIC std_msgs rclcpp muscle_interfa
 install(TARGETS test_lib_signal
         DESTINATION lib/${PROJECT_NAME})
 
+# test simulator generator
+add_executable(simulator_generator
+        src/simulator_generator.cpp
+)
+
+target_include_directories(simulator_generator
+        PUBLIC
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+        "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>"
+)
+target_link_libraries(simulator_generator
+PUBLIC Eigen3::Eigen lib_signal
+)
+ament_target_dependencies(simulator_generator PUBLIC std_msgs rclcpp muscle_interfaces)
+
 ament_package()
