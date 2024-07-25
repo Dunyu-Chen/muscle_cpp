@@ -6,90 +6,56 @@
 #include "vector"
 #include "cmath"
 
-struct Node_Sample_Time{
-    double period; // in s
+class Sample_Time {
+public:
+    //构造函数
+    Sample_Time(double Period);
+    //公共属性
+    double period;
     std::chrono::microseconds chrono_us{};
     std::chrono::milliseconds chrono_ms{};
 };
-Node_Sample_Time init_node_sample_time(double Period);
+
 class Signal {
 public:
-    Signal(double Sample_time,int Input_dim,int Output_dim);
+    Signal(double Sample_period,int Dof = 1);
 
-    Node_Sample_Time sample_time;
-    double Time_global;
+    Sample_Time sample_time;
+    double global_time;
     int sequence;
-    Eigen::VectorXd output_vector;
-    Eigen::VectorXd input_vector;
+    Eigen::VectorXd state;
+    Eigen::VectorXd state_dot;
 
-    void reset(Eigen::VectorXd init_state);
+    void reset();
+    virtual Eigen::VectorXd explicit_search(double Time);
+    virtual void step();
+};
+
+class System {
+public:
+    //构造函数
+    System(double Sample_period, int State_dim, int Input_dim);
+    //公共属性
+    Sample_Time sample_time;
+    double global_time;
+    int sequence;
+    int input_dim;
+    int state_dim;
+    Eigen::VectorXd state_vector;
+    Eigen::VectorXd input_vector;
+    // 公共调用方法
+    void reset(Eigen::VectorXd Init_state,Eigen::VectorXd Init_input);
     virtual void step(Eigen::VectorXd Input);
 };
 
-struct Sin_Params {
-    double Amp;
-    double Fre;
-    double Mar;
-    double Pha;
-};
-class Signal_sin : public Signal{
+class Linear_System : public System{
 public:
-    Signal_sin(double Sample_time,Sin_Params Params);
-
-    Sin_Params params{};
+    Linear_System(double Sample_time, int State_dim, int Input_dim);
     void step(Eigen::VectorXd Input) override;
-    double search(double Time) const;
+    void set_A_matrix();
+    void set_B_matrix();
+private:
+    Eigen::MatrixXd A_matrix;
+    Eigen::MatrixXd B_matrix;
 };
-
-struct Stair_Params {
-    double period;
-    std::vector<double> time_list;
-    std::vector<double> data_list;
-};
-
-class Signal_stair : public Signal{
-public:
-    Signal_stair(double Sample_time,Stair_Params params) ;
-
-    Stair_Params params;
-    double search(double Time);
-    void step(Eigen::VectorXd Input) override;
-};
-
-struct PID_Params{
-    double K_p;
-    double K_i;
-    double K_d;
-};
-
-class PID_Incremental{
-public:
-    PID_Incremental(PID_Params Params);
-
-    PID_Params params;
-    double output_buffer[2];
-    double error_buffer[3];
-    double coe1;
-    double coe2;
-    double coe3;
-
-    void reset();
-    double step(double Target, double state);
-};
-
-class Linear_system : public Signal {
-public:
-    Linear_system(double Sample_time,int Input_dim,int State_dim);
-
-    Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic> A_matrix;
-    Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic> B_matrix;
-    int input_dim;
-    int state_dim;
-
-    void set_A_matrix_from_list(double * Data_list);
-    void set_B_matrix_from_list(double * Data_list);
-    void explicit_step(Eigen::VectorXd Input);
-};
-
-
 #endif //MUSCLE_CPP_LIB_SIGNAL_H

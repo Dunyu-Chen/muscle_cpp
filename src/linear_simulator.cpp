@@ -41,6 +41,7 @@ private:
     }
 };
 
+
 int main(int argc, char * argv[]) {
     rclcpp::init(argc, argv);
     rclcpp::QoS pub_qos(rclcpp::QoSInitialization::from_rmw(rmw_qos_profile_default));

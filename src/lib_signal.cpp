@@ -1,120 +1,96 @@
-#include <utility>
-
 #include "muscle_cpp/lib_signal.h"
 
-Node_Sample_Time init_node_sample_time(double Period){
-    Node_Sample_Time return_struct;
-    return_struct.period = Period; // S
-    return_struct.chrono_us = std::chrono::microseconds(static_cast<int>(std::round(Period * 1000000.0)));
-    return_struct.chrono_ms = std::chrono::milliseconds (static_cast<int>(std::round(Period * 1000.0)));
-    return return_struct;
-}
-Signal::Signal(double Sample_time,int Input_dim,int Output_dim) {
-    input_vector.resize(Input_dim);
-    output_vector.resize(Output_dim);
-    this->sample_time = init_node_sample_time(Sample_time);
-    Eigen::VectorXd init_state(Output_dim);
-    init_state.setZero();
-    this->reset(init_state);
+Sample_Time::Sample_Time(double Period) {
+    this->period = Period;
+    this->chrono_ms = std::chrono::milliseconds (static_cast<int>(std::round(Period * 1000.0)));
+    this->chrono_us = std::chrono::microseconds(static_cast<int>(std::round(Period * 1000000.0)));
 }
 
-void Signal::reset(Eigen::VectorXd init_state) {
-    this->Time_global = 0.0;
+Signal::Signal(double Sample_period, int Dof)
+    : sample_time(Sample_period)
+{
+    this->global_time = 0.0;
     this->sequence = 0;
-    output_vector = init_state.matrix();
+    this->state.resize(Dof);
+    this->state.setZero();
+    this->state_dot.resize(Dof);
+    this->state_dot.setZero();
 }
 
-void Signal::step(Eigen::VectorXd Input) {
-    this->Time_global += this->sample_time.period;
-    this->sequence += 1;
-    this->input_vector = Input.matrix();
+void Signal::reset(){
+    this->global_time = 0.0;
+    this->sequence = 0;
+    this->state.setZero();
+    this->state_dot.setZero();
 }
 
-Signal_sin::Signal_sin(double Sample_time,Sin_Params Params) : Signal(Sample_time,1,1){
-    params = Params;
-}
-
-double Signal_sin::search(double Time) const {
-    double return_value= params.Amp * sin(Time*params.Fre + params.Pha) + params.Mar;
+Eigen::VectorXd Signal::explicit_search(double Time) {
+    Eigen::VectorXd return_value(this->state.size());
+    return_value.setZero();
     return return_value;
 }
 
-void Signal_sin::step(Eigen::VectorXd Input){
-    Signal::step(Input);
-    output_vector[0] = this->search(Time_global);
+void Signal::step() {
+    this->global_time += this->sample_time.period;
+    this->sequence +=1;
+    auto state_buffer = this->state;
+    this->state = this->explicit_search(this->global_time);
+    state_dot = this->sample_time.period*(this->state - state_buffer);
 }
 
-Signal_stair::Signal_stair(double Sample_time, Stair_Params Params) : Signal(Sample_time,1,1){
-    params = Params;
+System::System(double Sample_period, int State_dim, int Input_dim)
+    : sample_time(Sample_period)
+{
+    this->global_time = 0.0;
+    this->sequence = 0;
+    input_dim=Input_dim;
+    state_dim=State_dim;
+    state_vector.resize(State_dim);
+    state_vector.setZero();
+    input_vector.resize(Input_dim);
+    input_vector.setZero();
 }
 
-double Signal_stair::search(double Time) {
-    double return_value = 0;
-    int data_index =0;
-    int no_coordinates = this->params.time_list.size();
-    double relative_time = Time - this->params.period*floor(Time/this->params.period);
-    for (int i=0;i<no_coordinates;i+=1){
-        if( (relative_time/this->params.period) >= this->params.time_list[i]){
-            data_index = i;
-        }
+void System::reset(Eigen::VectorXd Init_state, Eigen::VectorXd Init_input = Eigen::VectorXd::Zero()) {
+    this->global_time = 0.0;
+    this->sequence = 0;
+    if ((Init_state.size() == this->state_dim)&&(Init_input.size() == this->input_dim)){
+        state_vector = Init_state.matrix();
+        input_vector= Init_input.matrix();
     }
-    return_value = this->params.data_list[data_index];
-    return return_value;
+    else{
+        while(1){};
+    }
 }
 
-void Signal_stair::step(Eigen::VectorXd Input) {
-    Signal::step(Input);
-    output_vector[0] = this->search(Time_global);
-
+void System::step(Eigen::VectorXd Input) {
+    this->global_time += this->sample_time.period;
+    this->sequence +=1;
+    if (Input.size() == this->input_dim){
+        this->input_vector = Input.matrix();
+    }
+    else{
+        while(1){};
+    }
 }
 
-
-PID_Incremental::PID_Incremental(PID_Params Params){
-    params = Params;
-    coe1 = params.K_p+params.K_i+params.K_d;
-    coe2 = -params.K_p-2*params.K_d;
-    coe3 = params.K_d;
-    reset();
-}
-
-void PID_Incremental::reset() {
-    output_buffer[0] = output_buffer[1] = 0.0;
-    error_buffer[0] = error_buffer[1] =error_buffer[2] = 0.0;
-}
-
-double PID_Incremental::step(double Target, double State) {
-    error_buffer[2] = error_buffer[1];
-    error_buffer[1] = error_buffer[0];
-    error_buffer[0] = Target - State;
-
-    output_buffer[1] = output_buffer[0];
-    output_buffer[0] = output_buffer[1] + coe1*error_buffer[0] + coe2*error_buffer[1]+coe3*error_buffer[2];
-    return output_buffer[0];
-}
-
-Linear_system::Linear_system(double Sample_time,int Input_dim,int State_dim)
-: Signal(Sample_time,Input_dim,State_dim){
-    input_dim = Input_dim;
-    state_dim = State_dim;
+Linear_System::Linear_System(double Sample_time, int State_dim, int Input_dim)
+    : System(Sample_time,State_dim,Input_dim)
+{
     A_matrix.resize(State_dim,State_dim);
     B_matrix.resize(State_dim,Input_dim);
+}
 
+void Linear_System::step(Eigen::VectorXd Input) {
+    System::step(Input);
+    // Euler forward
+    state_vector = state_vector.matrix() + (A_matrix*state_vector+B_matrix*input_vector)*sample_time.period;
+}
+
+void Linear_System::set_A_matrix() {
 
 }
 
-void Linear_system::set_A_matrix_from_list(double *Data_list) {
-    Eigen::Map<Eigen::MatrixXd> matrixMap(Data_list, state_dim, state_dim);
-    A_matrix = matrixMap.matrix();
-}
+void Linear_System::set_B_matrix() {
 
-void Linear_system::set_B_matrix_from_list(double *Data_list) {
-    Eigen::Map<Eigen::MatrixXd> matrixMap(Data_list, state_dim, input_dim);
-    B_matrix = matrixMap.matrix();
 }
-
-void Linear_system::explicit_step(Eigen::VectorXd Input) {
-    Signal::step(Input);
-    output_vector = output_vector+ sample_time.period*(A_matrix*output_vector+B_matrix*input_vector);
-}
-
-//ld;sfaj;lkfdsja
