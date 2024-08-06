@@ -103,74 +103,55 @@ set_property(TARGET test_lib_signal PROPERTY CXX_STANDARD 17)
 install(TARGETS test_lib_signal
     DESTINATION lib/${PROJECT_NAME})
 
-# signal_sin_generator
-# 1. create target
-add_executable(signal_sin_generator
-        src/signal_sin_generator.cpp
-)
-# 2. add dependencies inside package by header
-target_include_directories(signal_sin_generator
-        PUBLIC
-        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-        "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>"
-)
-# 3. add dependencies
-target_link_libraries(signal_sin_generator PUBLIC Eigen3::Eigen)
-target_link_libraries(signal_sin_generator PUBLIC lib_signal)
-find_package(std_msgs REQUIRED)
-find_package(muscle_interfaces REQUIRED)
-ament_target_dependencies(signal_sin_generator PUBLIC std_msgs rclcpp muscle_interfaces)
-# 4. install executable
-install(TARGETS signal_sin_generator
-        DESTINATION lib/${PROJECT_NAME})
 
-# signal_stair_generator
-# 1. create target
-add_executable(signal_stair_generator
-        src/signal_stair_generator.cpp
-)
-# 2. add dependencies inside package by header
-target_include_directories(signal_stair_generator
-        PUBLIC
-        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-        "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>"
-)
-# 3. add dependencies
-target_link_libraries(signal_stair_generator PUBLIC Eigen3::Eigen)
-target_link_libraries(signal_stair_generator PUBLIC lib_signal)
-find_package(std_msgs REQUIRED)
-find_package(muscle_interfaces REQUIRED)
-ament_target_dependencies(signal_stair_generator PUBLIC std_msgs rclcpp muscle_interfaces)
-# 4. install executable
-install(TARGETS signal_stair_generator
-        DESTINATION lib/${PROJECT_NAME})
+# executable target: linear_simulator
+# ros node for linear system simulator
 
-# signal_stair_generator
 # 1. create target
 add_executable(linear_simulator
-        src/linear_simulator.cpp
-)
+        src/linear_simulator.cpp)
 # 2. add dependencies inside package by header
 target_include_directories(linear_simulator
+  PUBLIC
+  "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+  "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>"
+)
+# 3. add dependencies
+target_link_libraries(linear_simulator lib_signal)
+
+find_package(std_msgs REQUIRED)
+
+ament_target_dependencies(linear_simulator rclcpp std_msgs)
+# 4. install executable
+install(TARGETS linear_simulator
+  DESTINATION lib/${PROJECT_NAME})
+
+# executable target: signal_sin_gen
+# ros node to generate sin signal
+
+# 1. create target
+add_executable(signal_sin_gen
+        src/signal_sin_generator.cpp)
+# 2. add dependencies inside package by header
+target_include_directories(signal_sin_gen
         PUBLIC
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
         "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>"
 )
 # 3. add dependencies
-target_link_libraries(linear_simulator PUBLIC Eigen3::Eigen)
-target_link_libraries(linear_simulator PUBLIC lib_signal)
+target_link_libraries(signal_sin_gen lib_signal)
 find_package(std_msgs REQUIRED)
-find_package(muscle_interfaces REQUIRED)
-ament_target_dependencies(linear_simulator PUBLIC std_msgs rclcpp muscle_interfaces)
+ament_target_dependencies(signal_sin_gen rclcpp std_msgs)
 # 4. install executable
-install(TARGETS linear_simulator
+install(TARGETS signal_sin_gen
         DESTINATION lib/${PROJECT_NAME})
 
-# PID_controller
+# executable target: pid_controller
+# ros node for PID controller
+
 # 1. create target
 add_executable(pid_controller
-        src/pid_controller.cpp
-)
+        src/pid_controller.cpp)
 # 2. add dependencies inside package by header
 target_include_directories(pid_controller
         PUBLIC
@@ -178,13 +159,42 @@ target_include_directories(pid_controller
         "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>"
 )
 # 3. add dependencies
-target_link_libraries(pid_controller PUBLIC Eigen3::Eigen)
-target_link_libraries(pid_controller PUBLIC lib_signal)
+target_link_libraries(pid_controller lib_signal)
 find_package(std_msgs REQUIRED)
-find_package(muscle_interfaces REQUIRED)
-ament_target_dependencies(pid_controller PUBLIC std_msgs rclcpp muscle_interfaces)
+ament_target_dependencies(pid_controller rclcpp std_msgs)
 # 4. install executable
 install(TARGETS pid_controller
         DESTINATION lib/${PROJECT_NAME})
+
+# library target: lib_muscle
+# library for pneumatic muscle
+# 1. create target
+add_library(lib_muscle SHARED
+        src/lib_muscle.cpp
+)
+# 2. add header directories of target
+target_include_directories( lib_muscle
+        PUBLIC
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+        "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>"
+)
+# 3. add dependencies of the target
+target_link_libraries(lib_muscle PUBLIC Eigen3::Eigen)
+# 4. export the header of the library
+install(
+        DIRECTORY include/
+        DESTINATION include/${PROJECT_NAME}
+)
+# 5. compile the library
+install(
+        TARGETS lib_muscle
+        EXPORT export_${PROJECT_NAME}
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+        RUNTIME DESTINATION bin
+)
+# 6. export the library
+ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
+
 
 ament_package()
