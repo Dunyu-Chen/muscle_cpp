@@ -179,7 +179,8 @@ target_include_directories( lib_muscle
         "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>"
 )
 # 3. add dependencies of the target
-target_link_libraries(lib_muscle PUBLIC Eigen3::Eigen)
+target_link_libraries(lib_muscle PUBLIC Eigen3::Eigen lib_signal)
+
 # 4. export the header of the library
 install(
         DIRECTORY include/
@@ -196,5 +197,24 @@ install(
 # 6. export the library
 ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
 
+# executable target: pid_controller
+# ros node for PID controller
+
+# 1. create target
+add_executable(chamber_sim
+        src/closed_chamber_simulator.cpp)
+# 2. add dependencies inside package by header
+target_include_directories(chamber_sim
+        PUBLIC
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+        "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>"
+)
+# 3. add dependencies
+target_link_libraries(chamber_sim lib_signal lib_muscle matplotlib_cpp)
+find_package(std_msgs REQUIRED)
+ament_target_dependencies(chamber_sim rclcpp std_msgs)
+# 4. install executable
+install(TARGETS chamber_sim
+        DESTINATION lib/${PROJECT_NAME})
 
 ament_package()
